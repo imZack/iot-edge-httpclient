@@ -16,7 +16,7 @@ const onRequest = (req, res) => {
       const resultMsg = {
         data: response.data,
         status: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
       };
 
       res.send(response.status, resultMsg, (err) => {
