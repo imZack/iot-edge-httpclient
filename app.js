@@ -8,9 +8,13 @@ console.error = (message) => {
   throw new Error(message);
 };
 
+let axiosConfig = {
+  timeout: 240 * 1000,
+};
+
 const onRequest = (req, res) => {
   debug('got request', req);
-  axios(req.payload)
+  axios(Object.assign(axiosConfig, req.payload))
     .then((response) => {
       debug('got response', response);
       const resultMsg = {
@@ -38,6 +42,23 @@ const onRequest = (req, res) => {
     });
 };
 
+const getTwin = (err, twin) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  if (!twin) {
+    console.error(err);
+    return;
+  }
+
+  twin.on('properties.desired', (data) => {
+    axiosConfig = Object.assign(axiosConfig, data.axiosConfig);
+    debug('update axiosConfig', axiosConfig);
+  });
+}
+
 Client.fromEnvironment(Protocol, (err, client) => {
   if (err) {
     console.error(err);
@@ -56,21 +77,7 @@ Client.fromEnvironment(Protocol, (err, client) => {
 
     debug('Client connected');
 
-    client.getTwin((errTwin, twin) => {
-      if (errTwin) {
-        console.error(err);
-        return;
-      }
-
-      if (!twin) {
-        console.error(err);
-        return;
-      }
-
-      twin.on('properties.desired', (delta) => {
-      });
-    });
-
+    client.getTwin(getTwin);
     client.onMethod('request', onRequest);
   });
 });
