@@ -1,0 +1,15 @@
+FROM node@sha256:253932b581aa857c62e17488b0b9a50a9cf6a334c81052b362f38ddf9e54f938
+
+COPY package.json package-lock.json /app/
+
+WORKDIR /app
+
+COPY qemu-arm-static /usr/bin
+
+RUN npm install --production
+
+COPY . /app
+
+RUN rm /usr/bin/qemu-arm-static
+
+CMD ["node", "app.js"]
